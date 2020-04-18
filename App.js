@@ -26,6 +26,8 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 
 import DocumentPicker from 'react-native-document-picker';
+import ImagePicker from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
 
 
 const App: () => React$Node = () => {
@@ -36,14 +38,14 @@ const App: () => React$Node = () => {
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={styles.scrollView}>
- 
+
           <View style={styles.body}>
-           
 
-           <Button title="Open Document Picker" onPress={async ()=>{
-             
 
-             console.log("test click!");
+            <Button title="Open Document Picker" onPress={async () => {
+
+
+              console.log("test click!");
 
 
               // Pick a single file
@@ -66,7 +68,7 @@ const App: () => React$Node = () => {
               }
 
               // Pick multiple files
-              try  {
+              try {
                 const results = await DocumentPicker.pickMultiple({
                   type: [DocumentPicker.types.images],
                 });
@@ -88,7 +90,61 @@ const App: () => React$Node = () => {
 
 
 
-           }}/>
+            }} />
+
+
+
+            <Button title="Image Picker" onPress={async () => {
+
+
+
+
+
+              // More info on all the options is below in the API Reference... just some common use cases shown here
+              const options = {
+                title: 'Your Attachment',
+                
+                storageOptions: {
+                  skipBackup: true,
+                  path: 'images',
+                },
+              };
+
+              /**
+               * The first arg is the options object for customization (it can also be null or omitted for default options),
+               * The second arg is the callback which sends object: response (more info in the API Reference)
+               */
+              ImagePicker.showImagePicker(options, async (response) => {
+                console.log('Response = ', response);
+
+                if (response.didCancel) {
+                  console.log('User cancelled image picker');
+                } else if (response.error) {
+                  console.log('ImagePicker Error: ', response.error);
+                } else if (response.customButton) {
+                  console.log('User tapped custom button: ', response.customButton);
+                } else {
+                  const source = { uri: response.uri };
+                  const path = response.uri;
+                  // You can also display the image using data:
+                  // const source = { uri: 'data:image/jpeg;base64,' + response.data };
+
+                  console.log("source",source);
+  
+                  // create a native bridge function on IOS, which will compress the image quality (60%)  
+                  const base64 = await RNFS.readFile(path, 'base64');
+
+                  console.log("source",path);
+                  console.log("update the base64 to microservice",base64);
+
+
+                  // this.setState({
+                  //   avatarSource: source,
+                  // });
+                }
+              })
+
+            }} />
 
 
           </View>
